@@ -1,12 +1,5 @@
-const fileSaverScript = document.createElement("script");
-fileSaverScript.src =
-  "https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js";
-document.head.appendChild(fileSaverScript);
-
-const excelJsScript = document.createElement("script");
-excelJsScript.src =
-  "https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js";
-document.head.appendChild(excelJsScript);
+const ExcelJS = require("exceljs");
+const FileSaver = require("file-saver");
 
 const DEFAULT_FILE_TYPE =
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8";
@@ -237,11 +230,7 @@ const handleFileExport = async (sheetDatas, apiExcelDatas, fileName) => {
       .writeBuffer()
       .then((buffer) => {
         const excelData = new Blob([buffer], { type: DEFAULT_FILE_TYPE });
-
-        // As-Is
-        saveAs(excelData, fileName + DEFAULT_FILE_EXTENSION);
-        // To-Be
-        // FileSaver.saveAs(excelData, fileName + DEFAULT_FILE_EXTENSION);
+        FileSaver.saveAs(excelData, fileName + DEFAULT_FILE_EXTENSION);
       })
       .catch((error) => {
         console.error("Error saving file:", error);
@@ -250,3 +239,5 @@ const handleFileExport = async (sheetDatas, apiExcelDatas, fileName) => {
     alert("업로드된 파일이 없습니다");
   }
 };
+
+export { handleFileExport };
