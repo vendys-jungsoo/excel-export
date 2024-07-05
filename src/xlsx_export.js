@@ -1,5 +1,5 @@
-import ExcelJS from "exceljs";
-import FileSaver from "file-saver";
+import ExcelJS from "https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js";
+import { saveAs } from "https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js";
 
 const DEFAULT_FILE_TYPE =
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8";
@@ -230,7 +230,7 @@ const handleFileExport = async (sheetDatas, apiExcelDatas, fileName) => {
       .writeBuffer()
       .then((buffer) => {
         const excelData = new Blob([buffer], { type: DEFAULT_FILE_TYPE });
-        FileSaver.saveAs(excelData, fileName + DEFAULT_FILE_EXTENSION);
+        saveAs(excelData, fileName + DEFAULT_FILE_EXTENSION);
       })
       .catch((error) => {
         console.error("Error saving file:", error);

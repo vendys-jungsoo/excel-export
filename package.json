@@ -1,25 +1,15 @@
 {
   "name": "@jungsoo/excel-export",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "",
   "main": "src/xlsx_export.js",
   "scripts": {
-    "build": "babel src --out-dir lib",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "presets": [
-    "@babel/preset-env"
-  ],
   "keywords": [
     "vendys"
   ],
   "author": "jungsoo",
   "license": "ISC",
-  "dependencies": {
-    "@babel/cli": "^7.24.7",
-    "@babel/core": "^7.24.7",
-    "@babel/preset-env": "^7.24.7",
-    "exceljs": "^4.4.0",
-    "file-saver": "^2.0.5"
-  }
+  "dependencies": {}
 }
