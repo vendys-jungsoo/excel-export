@@ -1,5 +1,5 @@
-const ExcelJS = require("exceljs");
-const FileSaver = require("file-saver");
+import ExcelJS from "exceljs";
+import FileSaver from "file-saver";
 
 const DEFAULT_FILE_TYPE =
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8";
