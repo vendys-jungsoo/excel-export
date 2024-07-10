@@ -240,4 +240,4 @@ const handleFileExport = async (sheetDatas, apiExcelDatas, fileName) => {
   }
 };
 
-export { handleFileExport };
+export default handleFileExport;
