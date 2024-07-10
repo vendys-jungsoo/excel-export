@@ -3,13 +3,13 @@ const TerserPlugin = require("terser-webpack-plugin");
 
 module.exports = {
   mode: "production",
-  entry: "./src/xlsx_export.js",
+  entry: "./src/index.js",
   output: {
     path: path.resolve(__dirname, "dist"),
     filename: "excel.min.js",
     library: "handleFileExport", // 전역 스코프에서 사용할 이름
     libraryTarget: "umd", // UMD 형식으로 번들링
-    // globalObject: "this", // 전역 객체 설정
+    libraryExport: "default", // 기본 내보내기 설정
   },
   resolve: {
     extensions: [".js", ".jsx", ".ts", ".tsx"],
@@ -40,10 +40,9 @@ module.exports = {
     minimizer: [
       new TerserPlugin({
         test: /\.(js|jsx|ts|tsx)$/,
-        parallel: true,
         terserOptions: {
           format: {
-            comments: true, // 빌드 시, comment 제거 (주석 제거)
+            comments: false, // 빌드 시, comment 제거 (주석 제거)
           },
           compress: {
             drop_console: true, // 빌드 시, console.* 구문 코드 제거
