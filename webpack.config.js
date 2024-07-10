@@ -5,8 +5,8 @@ module.exports = {
   mode: "production",
   entry: "./src/xlsx_export.js",
   output: {
-    filename: "bundle.js",
     path: path.resolve(__dirname, "dist"),
+    filename: "bundle.js",
     library: "handleFileExport", // 전역 스코프에서 사용할 이름
     libraryTarget: "umd", // UMD 형식으로 번들링
     globalObject: "this", // 전역 객체 설정
