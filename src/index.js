@@ -1,3 +1,4 @@
+// Prod
 const ExcelJS = require("exceljs");
 const FileSaver = require("file-saver");
 
@@ -22,10 +23,10 @@ const generateSheet = async (workbook, sheet, apiExcelDatas) => {
     customValues = [],
     insertColNum = Infinity,
     newCols = [],
+    customFormulas = [],
   } = apiExcelDatas;
 
-  const isExistApiData = newRows.length > 0;
-
+  const newRowsLength = newRows.length;
   const { defaultColWidth } = workSheetProps.properties;
   const { sheet: isProtectedSheet, ...protectionOptions } =
     workSheetProps.sheetProtection || { sheet: false };
@@ -38,7 +39,7 @@ const generateSheet = async (workbook, sheet, apiExcelDatas) => {
 
   // Step 02. Row 스타일 지정
   rowLayouts.forEach(({ number, style, height }) => {
-    const isLayoutArea = !isExistApiData || number < startRowNum;
+    const isLayoutArea = !newRowsLength || number < startRowNum;
 
     if (isLayoutArea) {
       newWorkSheet.getRow(number).style = style;
@@ -47,7 +48,7 @@ const generateSheet = async (workbook, sheet, apiExcelDatas) => {
   });
 
   // Step 03. Cell 기본 스타일 및 정보 입력
-  const defaultCells = isExistApiData
+  const defaultCells = newRowsLength
     ? cellDatas.filter(({ row }) => row < startRowNum)
     : cellDatas;
 
@@ -103,7 +104,7 @@ const generateSheet = async (workbook, sheet, apiExcelDatas) => {
   newWorkSheet.columns = newWorkSheetCols;
 
   // Step 06. 데이터 삽입 및 validation, style 지정
-  if (isExistApiData) {
+  if (newRowsLength) {
     newRows.forEach(async (newRow) => {
       await newWorkSheet.addRow(newRow);
     });
@@ -114,9 +115,9 @@ const generateSheet = async (workbook, sheet, apiExcelDatas) => {
     tableFirstCells.forEach(({ style, col, row }) => {
       const targetColNum = isMovedCol(col) ? getMovedColNum(col) : col;
 
-      for (let i = 0; i <= newRows.length; i++) {
+      for (let i = 0; i <= newRowsLength; i++) {
         // Step 06-(2). 삽입된 데이터 Cell 에 스타일 및 validation 지정
-        if (colValidations[col]) {
+        if (colValidations && colValidations[col]) {
           newWorkSheet.getCell(row + i, targetColNum).dataValidation =
             colValidations[col].dataValidation;
         }
@@ -146,26 +147,56 @@ const generateSheet = async (workbook, sheet, apiExcelDatas) => {
     }
   });
 
-  // Step 08. Image 삽입
+  // Step 08. 커스텀 formula 삽입
+  customFormulas.forEach(({ startAddress, refAddress, formula }) => {
+    const { row: startRowNum, col: startColNum } =
+      newWorkSheet.getCell(startAddress);
+    const targetColNum = isMovedCol(startColNum)
+      ? getMovedColNum(startColNum)
+      : startColNum;
+
+    const { row: refRowNum, col: refColNum } = newWorkSheet.getCell(refAddress);
+    const targetRefColNum = isMovedCol(refColNum)
+      ? getMovedColNum(refColNum)
+      : refColNum;
+
+    for (let i = 0; i <= newRowsLength; i++) {
+      const { address: targetAddress } = newWorkSheet.getCell(
+        startRowNum + i,
+        targetColNum
+      );
+
+      const { address: refAddress } = newWorkSheet.getCell(
+        refRowNum + i,
+        targetRefColNum
+      );
+
+      newWorkSheet.getCell(targetAddress).value = {
+        formula: formula(refAddress),
+      };
+    }
+  });
+
+  // Step 08-1. 수식 적용하기 (수식에 다른 sheet 정보가 포함된 경우에는 fillFormula 사용 불가, https://github.com/exceljs/exceljs/issues/1766)
+  // customFillFormulas.forEach(({ addressRange, formula, values }) => {
+  //   newWorkSheet.fillFormula(addressRange, formula, values);
+  // });
+
+  // Step 09. Image 삽입
   images.forEach(({ range, imageUrl }) => {
     if (imageUrl) {
       const extension = imageUrl.split(";")[0].split("/")[1];
 
       const imageId = workbook.addImage({
-        // As-Is
         base64: imageUrl,
         extension,
-
-        // To-Be: Local Image 나 직접 upload 한 Image Url 로 변경 필요 (해당 코드에서는 range 만 참고)
-        // filename: 'path/to/image.jpg',
-        // extension: 'png',
       });
 
       newWorkSheet.addImage(imageId, range);
     }
   });
 
-  // Step 09. Sheet 암호 설정 (기본 "vendys123!")
+  // Step 10. Sheet 암호 설정 (기본 "vendys123!")
   if (isProtectedSheet) {
     const sheetPassword =
       "vendys123!" || prompt(`${name} Sheet의 비밀번호를 입력해주세요.`);
@@ -230,6 +261,9 @@ const handleFileExport = async (sheetDatas, apiExcelDatas, fileName) => {
       .writeBuffer()
       .then((buffer) => {
         const excelData = new Blob([buffer], { type: DEFAULT_FILE_TYPE });
+        // Dev
+        // saveAs(excelData, fileName + DEFAULT_FILE_EXTENSION);
+        // Prod
         FileSaver.saveAs(excelData, fileName + DEFAULT_FILE_EXTENSION);
       })
       .catch((error) => {
@@ -240,4 +274,5 @@ const handleFileExport = async (sheetDatas, apiExcelDatas, fileName) => {
   }
 };
 
+// // Prod
 export default handleFileExport;
