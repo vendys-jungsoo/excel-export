@@ -9,7 +9,7 @@ module.exports = {
     filename: "excel.min.js",
     library: "handleFileExport", // 전역 스코프에서 사용할 이름
     libraryTarget: "umd", // UMD 형식으로 번들링
-    libraryExport: "default", // 기본 내보내기 설정
+    libraryExport: "default", // 기본 내보내기 설정 (해당 옵션이 없으면 handleFileExport.default 로 호출 필요)
   },
   resolve: {
     extensions: [".js", ".jsx", ".ts", ".tsx"],
