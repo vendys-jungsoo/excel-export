@@ -234,6 +234,8 @@ const generateBook = (
 ) => {
   return new Promise((resolve, reject) => {
     const sheetDataKeys = Object.keys(sheetDatas);
+    const apiExcelDataKeys = Object.keys(apiExcelDatas);
+
     try {
       sheetDataKeys.length > 0
         ? sheetDataKeys
@@ -249,11 +251,13 @@ const generateBook = (
                 );
               }
             })
-        : generateSheet(
-            workbook,
-            { name: "Sheet1" },
-            apiExcelDatas[sheetId] || {}
-          );
+        : apiExcelDataKeys.forEach((sheetId) => {
+            generateSheet(
+              workbook,
+              { workSheet: { name: sheetId } },
+              apiExcelDatas[sheetId] || {}
+            );
+          });
 
       resolve(workbook);
     } catch (error) {
@@ -266,23 +270,19 @@ const handleFileExport = async (sheetDatas, apiExcelDatas, fileName) => {
   const workbook = new ExcelJS.Workbook();
   const newWorkbook = await generateBook(workbook, sheetDatas, apiExcelDatas);
 
-  if (Object.keys(sheetDatas).length > 0) {
-    newWorkbook.xlsx
-      .writeBuffer()
-      .then((buffer) => {
-        const excelData = new Blob([buffer], { type: DEFAULT_FILE_TYPE });
-        // Dev
-        // saveAs(excelData, fileName + DEFAULT_FILE_EXTENSION);
-        // Prod
-        FileSaver.saveAs(excelData, fileName + DEFAULT_FILE_EXTENSION);
-      })
-      .catch((error) => {
-        console.error("Error saving file:", error);
-      });
-  } else {
-    alert("업로드된 파일이 없습니다");
-  }
+  newWorkbook.xlsx
+    .writeBuffer()
+    .then((buffer) => {
+      const excelData = new Blob([buffer], { type: DEFAULT_FILE_TYPE });
+      // Dev
+      // saveAs(excelData, fileName + DEFAULT_FILE_EXTENSION);
+      // Prod
+      FileSaver.saveAs(excelData, fileName + DEFAULT_FILE_EXTENSION);
+    })
+    .catch((error) => {
+      console.error("Error saving file:", error);
+    });
 };
 
-// // Prod
+// Prod
 export default handleFileExport;
