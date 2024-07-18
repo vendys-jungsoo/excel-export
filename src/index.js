@@ -5,16 +5,17 @@ const FileSaver = require("file-saver");
 const DEFAULT_FILE_TYPE =
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8";
 const DEFAULT_FILE_EXTENSION = ".xlsx";
+const DEFAULT_COL_WIDTH = 9;
 const WIDTH_ERROR_MARGIN = 1.3;
 
 const generateSheet = async (workbook, sheet, apiExcelDatas) => {
   const {
     workSheet: { name, ...workSheetProps },
-    colValidations,
-    rowLayouts,
-    colLayouts,
-    cellDatas,
-    images,
+    colValidations = {},
+    rowLayouts = [],
+    colLayouts = [],
+    cellDatas = [],
+    images = [],
   } = sheet;
 
   const {
@@ -27,15 +28,17 @@ const generateSheet = async (workbook, sheet, apiExcelDatas) => {
   } = apiExcelDatas;
 
   const newRowsLength = newRows.length;
-  const { defaultColWidth } = workSheetProps.properties;
+  const generateWithoutLayout = Object.keys(workSheetProps).length < 1;
+
+  const { defaultColWidth } = workSheetProps?.properties || DEFAULT_COL_WIDTH;
   const { sheet: isProtectedSheet, ...protectionOptions } =
-    workSheetProps.sheetProtection || { sheet: false };
+    workSheetProps?.sheetProtection || { sheet: false };
 
   const getMovedColNum = (colNum) => colNum + newCols.length;
   const isMovedCol = (colNum) => colNum >= insertColNum;
 
   // Step 01. workbook 파일 props 지정
-  const newWorkSheet = workbook.addWorksheet(name, workSheetProps);
+  const newWorkSheet = workbook.addWorksheet(name, workSheetProps || {});
 
   // Step 02. Row 스타일 지정
   rowLayouts.forEach(({ number, style, height }) => {
@@ -226,24 +229,31 @@ const setWorkbookProperties = (workbook, workbookProps) => {
 
 const generateBook = (
   workbook,
-  sheetDatas,
+  sheetDatas = {},
   apiExcelDatas = {} // Info: API를 통해 받아온 데이터 및 커스텀 options
 ) => {
   return new Promise((resolve, reject) => {
+    const sheetDataKeys = Object.keys(sheetDatas);
     try {
-      Object.keys(sheetDatas)
-        .sort() // Warning: 문자형으로 sorting하기 때문에 10개 이상의 sheet가 존재할 경우 비정상적으로 동작함
-        .forEach((sheetId) => {
-          if (sheetId === "workbook") {
-            setWorkbookProperties(workbook, sheetDatas[sheetId]);
-          } else {
-            generateSheet(
-              workbook,
-              sheetDatas[sheetId],
-              apiExcelDatas[sheetId] || {}
-            );
-          }
-        });
+      sheetDataKeys.length > 0
+        ? sheetDataKeys
+            .sort() // Warning: 문자형으로 sorting하기 때문에 10개 이상의 sheet가 존재할 경우 비정상적으로 동작함
+            .forEach((sheetId) => {
+              if (sheetId === "workbook") {
+                setWorkbookProperties(workbook, sheetDatas[sheetId]);
+              } else {
+                generateSheet(
+                  workbook,
+                  sheetDatas[sheetId],
+                  apiExcelDatas[sheetId] || {}
+                );
+              }
+            })
+        : generateSheet(
+            workbook,
+            { name: "Sheet1" },
+            apiExcelDatas[sheetId] || {}
+          );
 
       resolve(workbook);
     } catch (error) {
