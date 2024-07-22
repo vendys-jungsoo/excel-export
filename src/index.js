@@ -8,7 +8,7 @@ const DEFAULT_FILE_EXTENSION = ".xlsx";
 const DEFAULT_COL_WIDTH = 9;
 const WIDTH_ERROR_MARGIN = 1.3;
 
-const generateSheet = async (workbook, sheet, apiExcelDatas) => {
+const generateSheet = async (workbook, sheetLayout, sheetData) => {
   const {
     workSheet: { name, ...workSheetProps },
     colValidations = {},
@@ -16,7 +16,7 @@ const generateSheet = async (workbook, sheet, apiExcelDatas) => {
     colLayouts = [],
     cellDatas = [],
     images = [],
-  } = sheet;
+  } = sheetLayout;
 
   const {
     startRowNum = Infinity,
@@ -25,7 +25,7 @@ const generateSheet = async (workbook, sheet, apiExcelDatas) => {
     insertColNum = Infinity,
     newCols = [],
     customFormulas = [],
-  } = apiExcelDatas;
+  } = sheetData;
 
   const newRowsLength = newRows.length;
   const generateWithoutLayout = Object.keys(workSheetProps).length < 1;
@@ -229,33 +229,31 @@ const setWorkbookProperties = (workbook, workbookProps) => {
 
 const generateBook = (
   workbook,
-  sheetDatas = {},
-  apiExcelDatas = {} // Info: API를 통해 받아온 데이터 및 커스텀 options
+  sheetLayout = {},
+  sheetData = {} // Info: API를 통해 받아온 데이터 및 커스텀 options
 ) => {
   return new Promise((resolve, reject) => {
-    const sheetDataKeys = Object.keys(sheetDatas);
-    const apiExcelDataKeys = Object.keys(apiExcelDatas);
+    const sheetLayoutKeys = Object.keys(sheetLayout).sort(); // Warning: 문자형으로 sorting하기 때문에 10개 이상의 sheet가 존재할 경우 비정상적으로 동작함;
+    const sheetDataKeys = Object.keys(sheetData);
 
     try {
-      sheetDataKeys.length > 0
-        ? sheetDataKeys
-            .sort() // Warning: 문자형으로 sorting하기 때문에 10개 이상의 sheet가 존재할 경우 비정상적으로 동작함
-            .forEach((sheetId) => {
-              if (sheetId === "workbook") {
-                setWorkbookProperties(workbook, sheetDatas[sheetId]);
-              } else {
-                generateSheet(
-                  workbook,
-                  sheetDatas[sheetId],
-                  apiExcelDatas[sheetId] || {}
-                );
-              }
-            })
-        : apiExcelDataKeys.forEach((sheetId) => {
+      sheetLayoutKeys.length > 0
+        ? sheetLayoutKeys.forEach((sheetId) => {
+            if (sheetId === "workbook") {
+              setWorkbookProperties(workbook, sheetLayout[sheetId]);
+            } else {
+              generateSheet(
+                workbook,
+                sheetLayout[sheetId],
+                sheetData[sheetId] || {}
+              );
+            }
+          })
+        : sheetDataKeys.forEach((sheetId) => {
             generateSheet(
               workbook,
               { workSheet: { name: sheetId } },
-              apiExcelDatas[sheetId] || {}
+              sheetData[sheetId] || {}
             );
           });
 
@@ -266,9 +264,9 @@ const generateBook = (
   });
 };
 
-const handleFileExport = async (sheetDatas, apiExcelDatas, fileName) => {
+const handleFileExport = async (sheetLayout, sheetData, fileName) => {
   const workbook = new ExcelJS.Workbook();
-  const newWorkbook = await generateBook(workbook, sheetDatas, apiExcelDatas);
+  const newWorkbook = await generateBook(workbook, sheetLayout, sheetData);
 
   newWorkbook.xlsx
     .writeBuffer()
