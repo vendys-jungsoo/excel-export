@@ -3,7 +3,7 @@ const TerserPlugin = require("terser-webpack-plugin");
 
 module.exports = {
   mode: "production",
-  entry: "./src/index.js",
+  entry: "./src/index.ts",
   output: {
     path: path.resolve(__dirname, "dist"),
     filename: "excel.min.js",
@@ -30,7 +30,7 @@ module.exports = {
         options: {
           cacheCompression: false,
           cacheDirectory: true,
-          presets: ["@babel/preset-env"],
+          presets: ["@babel/preset-env", "@babel/preset-typescript"],
         },
       },
     ],
