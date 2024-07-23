@@ -268,7 +268,7 @@ const handleFileExport = async (sheetLayout, sheetData, fileName) => {
   const workbook = new ExcelJS.Workbook();
   const newWorkbook = await generateBook(workbook, sheetLayout, sheetData);
 
-  newWorkbook.xlsx
+  (newWorkbook as any).xlsx
     .writeBuffer()
     .then((buffer) => {
       const excelData = new Blob([buffer], { type: DEFAULT_FILE_TYPE });
