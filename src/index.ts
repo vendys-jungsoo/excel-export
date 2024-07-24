@@ -11,7 +11,6 @@ const WIDTH_ERROR_MARGIN = 1.3;
 const generateSheet = async (workbook, sheetLayout, sheetData) => {
   const {
     workSheet: { name, ...workSheetProps },
-    colValidations = {},
     rowLayouts = [],
     colLayouts = [],
     cellDatas = [],
@@ -22,11 +21,12 @@ const generateSheet = async (workbook, sheetLayout, sheetData) => {
     startRowNum = Infinity, // Info: 새로운 Row 를 넣기 위한 시작점
     newRows = [], // Info: 새롭게 추가할 Row 값
     customValues = [], // Info: 특정 Cell 을 변경해야 하는 위치 및 값
-    insertColNum = Infinity, // Info: 새로운 Col 을 넣기 위한 시작점 (Style 은 삽입 전 Col 의 Style 을 따라감)
+    insertColNum = Infinity, // Info: 새로운 Col 을 넣기 위한 시작점 (Style 은 삽입 전 Col 의 Style 을 따라감, ex - 5번에 삽입 -> 4번과 5번 사이에 추가됨 -> 스타일은 기존 5번 col 의 스타일을 따라감)
     newCols = [], // Info: 새로게 추가할 Col 의 Row 값 (Table 의 head label 을 변경하기 위함)
     customFormulas = [], // Info: Cell 에 지정할 수식
     tableInfos = [], // Info: 스타일을 지정하는 것이 아닌, 단순히 Table 을 넣기 위한 필드
     removeColumns = [], // Info: 특정 Col 을 삭제하기 위한 값
+    colValidations = {}, // Info: 특정 Cell 에 대한 Validation 을 담기 위한 변수 (layout 을 통해 추출한 값을 복사 & 붙여넣기)
   } = sheetData;
 
   const newRowsLength = newRows.length;
