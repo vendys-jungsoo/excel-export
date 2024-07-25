@@ -15,6 +15,7 @@ const generateSheet = async (workbook, sheetLayout, sheetData) => {
     colLayouts = [],
     cellDatas = [],
     images = [],
+    colValidations: colValidationsInLayout = {},
   } = sheetLayout;
 
   const {
@@ -131,9 +132,12 @@ const generateSheet = async (workbook, sheetLayout, sheetData) => {
 
         for (let i = 0; i <= newRowsLength; i++) {
           // Step 06-(2). 삽입된 데이터 Cell 에 스타일 및 validation 지정
-          if (colValidations && colValidations[col]) {
+          const currentValidations =
+            colValidations[col] || colValidationsInLayout[col];
+
+          if (currentValidations) {
             newWorkSheet.getCell(row + i, targetColNum).dataValidation =
-              colValidations[col].dataValidation;
+              currentValidations.dataValidation;
           }
 
           newWorkSheet.getCell(row + i, targetColNum).style = style;
