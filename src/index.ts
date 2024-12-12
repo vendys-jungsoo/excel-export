@@ -79,10 +79,12 @@ const generateSheet = async (workbook, sheetLayout, sheetData) => {
     // Step 04. 새롭게 추가된 col에 대한 value 및 style 추가
     newCols.forEach(({ rowNum, value }, index) => {
       const targetColNum = insertColNum + index;
+
       newWorkSheet.getColumn(targetColNum).eachCell(({ address, row }) => {
-        const basedCellStyle = defaultCells.find(
-          (e) => e.address === address
-        ).style;
+        // Step 04-(1). insertColNum 기준의 스타일을 적용
+        const basedCellStyle =
+          defaultCells.find((e) => e.col === insertColNum && e.row === row)
+            ?.style || {};
         newWorkSheet.getCell(address).style = { ...basedCellStyle };
 
         if (rowNum === row) {
